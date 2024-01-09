@@ -14,8 +14,9 @@ public class PlayerMovement : MonoBehaviour
     private float dirX = 0f;
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float jumpForce = 14f;
+    [SerializeField] private int maxJumps = 2;
 
-    private int jumpInTheAir = 0;
+    private int jumpsRemaining;
 
     private enum MovementState { idle, running, jumping, falling }
 
@@ -26,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
         coll = GetComponent<BoxCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        jumpsRemaining = maxJumps;
     }
 
     // Update is called once per frame
@@ -34,14 +36,20 @@ public class PlayerMovement : MonoBehaviour
         dirX = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        if (Input.GetButtonDown("Jump") && (IsGrounded() || jumpInTheAir == 0))
+        if (Input.GetButtonDown("Jump"))
         {
-            jumpInTheAir++;
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-        }
-        else if (IsGrounded())
-        {
-            jumpInTheAir = 0;
+            if (IsGrounded())
+            {
+                // If the player is grounded, perform a regular jump
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                jumpsRemaining = maxJumps - 1;  // Reset jumps remaining when grounded
+            }
+            else if (jumpsRemaining > 0)
+            {
+                // If the player is not grounded and has remaining jumps, perform a double jump
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                jumpsRemaining--;
+            }
         }
 
         UpdateAnimationState();
