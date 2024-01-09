@@ -15,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float jumpForce = 14f;
 
+    private int jumpInTheAir = 0;
+
     private enum MovementState { idle, running, jumping, falling }
 
     // Start is called before the first frame update
@@ -32,9 +34,14 @@ public class PlayerMovement : MonoBehaviour
         dirX = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        if (Input.GetButtonDown("Jump") && IsGrounded())
+        if (Input.GetButtonDown("Jump") && (IsGrounded() || jumpInTheAir == 0))
         {
+            jumpInTheAir++;
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        }
+        else if (IsGrounded())
+        {
+            jumpInTheAir = 0;
         }
 
         UpdateAnimationState();
